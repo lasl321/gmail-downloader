@@ -1,0 +1,29 @@
+{
+  "name": "gmail-tool",
+  "version": "1.0.0",
+  "description": "Download emails from a given sender via the Gmail API into SQLite and JSON",
+  "type": "module",
+  "bin": {
+    "gmail-tool": "./dist/cli.js"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node dist/cli.js",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "prestart": "npm run build"
+  },
+  "dependencies": {
+    "@google-cloud/local-auth": "^3.0.1",
+    "commander": "^15.0.0",
+    "googleapis": "^183.0.0",
+    "mailparser": "^3.9.36"
+  },
+  "devDependencies": {
+    "@types/mailparser": "^3.9.0",
+    "@types/node": "^24.19.1",
+    "typescript": "~6.0.3"
+  }
+}
