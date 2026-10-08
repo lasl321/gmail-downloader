@@ -1,10 +1,10 @@
 {
-  "name": "gmail-tool",
+  "name": "gmail-downloader",
   "version": "1.0.0",
   "description": "Download emails from a given sender via the Gmail API into SQLite and JSON",
   "type": "module",
   "bin": {
-    "gmail-tool": "./dist/cli.js"
+    "gmail-downloader": "./dist/cli.js"
   },
   "engines": {
     "node": ">=22.13"

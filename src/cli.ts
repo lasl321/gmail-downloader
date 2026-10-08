@@ -14,7 +14,7 @@ interface Options {
 const program = new Command();
 
 program
-  .name('gmail-tool')
+  .name('gmail-downloader')
   .description('Download emails from a sender into SQLite and print them as JSON')
   .argument('<credentials>', 'path to the Google OAuth client JSON file')
   .argument('<sender>', 'email address or domain to look for (e.g. ziprecruiter.com)')
