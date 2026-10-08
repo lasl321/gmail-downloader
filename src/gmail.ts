@@ -87,7 +87,7 @@ export async function fetchEmails({
   const auth = await getAuth(credentialsPath, tokenPath);
   const gmail = google.gmail({ version: 'v1', auth });
 
-  const ids: string[] = [];
+  const ids = new Set<string>();
   let pageToken: string | undefined;
   do {
     const { data }: { data: gmail_v1.Schema$ListMessagesResponse } = await gmail.users.messages.list({
@@ -96,13 +96,13 @@ export async function fetchEmails({
       maxResults: 500,
       pageToken,
     });
-    ids.push(...(data.messages ?? []).flatMap((m) => (m.id ? [m.id] : [])));
+    for (const m of data.messages ?? []) if (m.id) ids.add(m.id);
     pageToken = data.nextPageToken ?? undefined;
   } while (pageToken);
 
-  const newIds = ids.filter((id) => !skipIds.has(id));
+  const newIds = [...ids.difference(skipIds)];
   process.stderr.write(
-    `Found ${ids.length} message(s), ${ids.length - newIds.length} already saved\n`,
+    `Found ${ids.size} message(s), ${ids.size - newIds.length} already saved\n`,
   );
 
   const emails: Email[] = [];
