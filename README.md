@@ -94,6 +94,21 @@ Since progress goes to stderr, you can pipe the JSON straight into other tools:
 node dist/cli.js client_secret_XXXX.json example.com 2>/dev/null | jq '.[].subject'
 ```
 
+## Two versions of `google-auth-library`
+
+Two dependencies each bring their own copy of `google-auth-library`, and the versions differ:
+
+| Package | Bundles `google-auth-library` |
+| --- | --- |
+| `@google-cloud/local-auth` (browser sign-in flow) | v9 |
+| `googleapis` (the Gmail client) | v11 |
+
+The `OAuth2Client` classes from the two versions are structurally incompatible in TypeScript, so the client returned by `local-auth`'s `authenticate()` can't be passed to `google.gmail()` without a type cast.
+
+**Workaround (`src/gmail.ts`):** the tool never passes the v9 client around. It creates its own `OAuth2` client from `googleapis` (v11) using the `client_id` and `client_secret` in the credentials file. On first run it calls `authenticate()` only to complete the browser flow, then copies the resulting credentials (access token, refresh token, expiry) onto the v11 client with `setCredentials()` in `copyCredentials()`. Credentials are plain data, so they transfer cleanly and no cast is needed. On later runs the cached `token.json` is loaded straight into the v11 client and `local-auth` isn't used at all.
+
+If a future release of `@google-cloud/local-auth` depends on the same `google-auth-library` major version as `googleapis`, the copy step can be removed.
+
 ## Development
 
 ```
