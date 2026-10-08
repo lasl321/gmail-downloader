@@ -8,6 +8,7 @@ interface Options {
   token: string;
   allMail?: boolean;
   label?: string;
+  limitDate?: string;
 }
 
 const program = new Command();
@@ -21,13 +22,24 @@ program
   .option('-t, --token <path>', 'where to cache the OAuth token', 'token.json')
   .option('--all-mail', 'search all mail instead of only the inbox')
   .option('-l, --label <name>', 'only search messages with this Gmail label (replaces the inbox scope)')
+  .option('--limit-date <YYYY-MM-DD>', 'only search emails on or after this date')
   .action(async (credentials: string, sender: string, opts: Options) => {
     const scope = opts.label
       ? `label:"${opts.label.replaceAll('"', '')}" `
       : opts.allMail
         ? ''
         : 'in:inbox ';
-    const query = `${scope}from:${sender}`;
+    let dateFilter = '';
+    if (opts.limitDate) {
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(opts.limitDate);
+      const valid =
+        m && new Date(`${opts.limitDate}T00:00:00Z`).toISOString().startsWith(opts.limitDate);
+      if (!m || !valid) {
+        throw new Error(`--limit-date must be a valid date in YYYY-MM-DD format, got "${opts.limitDate}"`);
+      }
+      dateFilter = ` after:${m[1]}/${m[2]}/${m[3]}`;
+    }
+    const query = `${scope}from:${sender}${dateFilter}`;
     const emails = await fetchEmails({
       credentialsPath: credentials,
       tokenPath: opts.token,
