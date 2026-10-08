@@ -7,6 +7,7 @@ interface Options {
   db: string;
   token: string;
   allMail?: boolean;
+  label?: string;
 }
 
 const program = new Command();
@@ -19,8 +20,14 @@ program
   .option('-d, --db <path>', 'SQLite file to write', 'emails.sqlite')
   .option('-t, --token <path>', 'where to cache the OAuth token', 'token.json')
   .option('--all-mail', 'search all mail instead of only the inbox')
+  .option('-l, --label <name>', 'only search messages with this Gmail label (replaces the inbox scope)')
   .action(async (credentials: string, sender: string, opts: Options) => {
-    const query = `${opts.allMail ? '' : 'in:inbox '}from:${sender}`;
+    const scope = opts.label
+      ? `label:"${opts.label.replaceAll('"', '')}" `
+      : opts.allMail
+        ? ''
+        : 'in:inbox ';
+    const query = `${scope}from:${sender}`;
     const emails = await fetchEmails({
       credentialsPath: credentials,
       tokenPath: opts.token,

@@ -151,3 +151,4 @@ vite.config.ts.timestamp-*
 # Project-specific
 token.json
 *.sqlite
+client_secret_*.json
