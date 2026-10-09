@@ -1,0 +1,43 @@
+---
+name: gmail-downloader
+description: Download emails from a sender (email address or domain) via the Gmail API into SQLite and print them as JSON. Use when the user wants to fetch/download/search Gmail messages from a sender, given a Google OAuth client JSON file.
+argument-hint: <client-json-path> <email-or-domain> [label <name> | all mail] [after <YYYY-MM-DD>]
+---
+
+# gmail-downloader
+
+Runs this repo's CLI (`src/cli.ts`, built to `dist/cli.js`).
+
+## Required inputs
+
+1. **Client JSON file**: path to the Google OAuth client secret JSON.
+2. **Sender**: an email address (`jobs@example.com`) or domain (`example.com`).
+
+If either is missing from the user's request, ask for it before running anything. Verify the client JSON file exists.
+
+## Scope (default: inbox only)
+
+- No scope mentioned → inbox only (the CLI default; pass no scope flag).
+- User names a Gmail label → `--label "<name>"` (replaces the inbox scope).
+- User asks for all emails / all mail / everywhere → `--all-mail`.
+- User gives a start date → `--limit-date YYYY-MM-DD` (emails on or after that date).
+
+## Run
+
+Run from the repo root (`/Users/lasl321/code/gmail-downloader`), because the default `--db` (`emails.sqlite`) and `--token` (`token.json`) paths are relative to the working directory. Use an absolute path for the client JSON.
+
+```bash
+cd /Users/lasl321/code/gmail-downloader && npm --silent start -- "<abs-path-to-client.json>" "<sender>" [--label "<name>" | --all-mail] [--limit-date YYYY-MM-DD]
+```
+
+`npm start` builds first (`prestart`). Run `npm install` first only if `node_modules` is missing.
+
+## Behavior to know about
+
+- First run opens a browser for Google OAuth consent and caches the token in `token.json`. Warn the user that a browser window may open, and that a long-running command may be waiting on them.
+- Emails already saved in `emails.sqlite` are skipped, so stdout contains only **new** emails (a JSON array of `{from, to, subject, textBody, htmlBody}`). An empty array means nothing new.
+- Errors go to stderr with exit code 1.
+
+## Reporting
+
+Summarize results (count, senders, subjects) rather than dumping full bodies, unless the user asks for them. Mention that everything is stored in `emails.sqlite`.
