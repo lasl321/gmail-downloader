@@ -21,6 +21,12 @@ export interface Email {
   htmlBody: string;
 }
 
+export interface FetchResult {
+  emails: Email[];
+  /** IDs of matching messages that were in `skipIds` and so not fetched. */
+  skippedIds: Set<string>;
+}
+
 export interface FetchOptions {
   credentialsPath: string;
   tokenPath: string;
@@ -83,7 +89,7 @@ export async function fetchEmails({
   tokenPath,
   query,
   skipIds = new Set(),
-}: FetchOptions): Promise<Email[]> {
+}: FetchOptions): Promise<FetchResult> {
   const auth = await getAuth(credentialsPath, tokenPath);
   const gmail = google.gmail({ version: 'v1', auth });
 
@@ -101,6 +107,7 @@ export async function fetchEmails({
   } while (pageToken);
 
   const newIds = [...ids.difference(skipIds)];
+  const skippedIds = ids.intersection(skipIds);
   process.stderr.write(
     `Found ${ids.size} message(s), ${ids.size - newIds.length} already saved\n`,
   );
@@ -110,5 +117,5 @@ export async function fetchEmails({
     const batch = newIds.slice(i, i + CONCURRENCY);
     emails.push(...(await Promise.all(batch.map((id) => fetchOne(gmail, id)))));
   }
-  return emails;
+  return { emails, skippedIds };
 }

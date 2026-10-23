@@ -4,7 +4,8 @@ import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { fetchEmails } from './gmail.js';
-import { getSavedIds, saveEmails } from './db.js';
+import { getEmailsByIds, getSavedIds, saveEmails } from './db.js';
+import { saveEmailFiles } from './files.js';
 
 const DEFAULT_CREDENTIALS_PATH = join(homedir(), '.config', 'gmail-downloader', 'access.json');
 
@@ -15,6 +16,7 @@ interface Options {
   allMail?: boolean;
   label?: string;
   limitDate?: string;
+  saveFiles?: boolean;
 }
 
 const program = new Command();
@@ -32,6 +34,10 @@ program
   .option('--all-mail', 'search all mail instead of only the inbox')
   .option('-l, --label <name>', 'only search messages with this Gmail label (replaces the inbox scope)')
   .option('--limit-date <YYYY-MM-DD>', 'only search emails on or after this date')
+  .option(
+    '--save-files',
+    'also save each email as <subject>.txt in a YYYY-MM-DD/ folder (includes emails already in SQLite)',
+  )
   .action(async (sender: string, opts: Options) => {
     let credentials = opts.credentials;
     if (credentials === undefined) {
@@ -60,13 +66,19 @@ program
       dateFilter = ` after:${m[1]}/${m[2]}/${m[3]}`;
     }
     const query = `${scope}from:${sender}${dateFilter}`;
-    const emails = await fetchEmails({
+    const { emails, skippedIds } = await fetchEmails({
       credentialsPath: credentials,
       tokenPath: opts.token,
       query,
       skipIds: getSavedIds(opts.db),
     });
     saveEmails(opts.db, emails);
+    if (opts.saveFiles) {
+      const dir = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD in local time
+      const all = [...emails, ...getEmailsByIds(opts.db, skippedIds)];
+      saveEmailFiles(dir, all);
+      process.stderr.write(`Saved ${all.length} file(s) to ${dir}/\n`);
+    }
     process.stdout.write(
       JSON.stringify(
         emails.map(({ from, to, subject, textBody, htmlBody }) => ({

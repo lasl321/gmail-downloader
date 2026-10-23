@@ -53,3 +53,23 @@ export function saveEmails(path: string, emails: Email[]): void {
     db.close();
   }
 }
+
+export function getEmailsByIds(path: string, ids: Set<string>): Email[] {
+  const db = openDb(path);
+  try {
+    return db
+      .prepare('SELECT * FROM emails')
+      .all()
+      .filter((r) => ids.has(r['gmail_id'] as string))
+      .map((r) => ({
+        id: r['gmail_id'] as string,
+        from: { name: r['from_name'] as string, email: r['from_email'] as string },
+        to: { name: r['to_name'] as string, email: r['to_email'] as string },
+        subject: r['subject'] as string,
+        textBody: r['text_body'] as string,
+        htmlBody: r['html_body'] as string,
+      }));
+  } finally {
+    db.close();
+  }
+}
