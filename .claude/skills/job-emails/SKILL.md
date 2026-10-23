@@ -1,7 +1,7 @@
 ---
 name: job-emails
 description: Download job-related emails from LinkedIn, ZipRecruiter, and Built In with the gmail-downloader app, saving them to SQLite and as text files. Use when the user wants to pull, refresh, or sweep their job-board emails.
-argument-hint: [after <YYYY-MM-DD>] [label <name> | all mail]
+argument-hint: [after <YYYY-MM-DD>] [label <name> | all mail] [output <dir>]
 ---
 
 # job-emails
@@ -22,13 +22,16 @@ Verify `~/.config/gmail-downloader/access.json` exists first. Then run the three
 cd /Users/lasl321/code/gmail-downloader
 for s in linkedin.com ziprecruiter.com builtin.com; do
   echo "== $s" >&2
-  npm --silent start -- "$s" --save-files [extra flags] > "<scratchpad>/$s.json"
+  npm --silent start -- "$s" --limit-date "$(date +%F)" --save-files [dir] [extra flags] > "<scratchpad>/$s.json"
 done
 ```
 
-`[extra flags]` come from the user's arguments, applied to all three senders: `--limit-date YYYY-MM-DD` for a start date, `--label "<name>"` for a label, `--all-mail` for all mail. Otherwise none (inbox only). If one sender fails, report it and still run the others.
+- **Today only:** `--limit-date` is always today's date (`date +%F`), so only emails from the current day are considered. Only if the user gives a different start date, pass that instead.
+- **Output directory:** `--save-files` with no value writes to `output/YYYY-MM-DD/` (gitignored). Only if the user names a directory, pass it as `--save-files "<dir>"`. Files include emails already in SQLite.
+- **`[extra flags]`** come from the user's arguments, applied to all three senders: `--label "<name>"` for a label, `--all-mail` for all mail. Otherwise none (inbox only).
+- If one sender fails, report it and still run the others.
 
-`--save-files` is always passed: files land in `output/YYYY-MM-DD/` (gitignored), including emails already in SQLite. See the `gmail-downloader` skill for the full flag behavior; the first run may open a browser for OAuth consent.
+See the `gmail-downloader` skill for the full flag behavior; the first run may open a browser for OAuth consent.
 
 ## Reporting
 
