@@ -1,9 +1,15 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
+import { existsSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 import { fetchEmails } from './gmail.js';
 import { getSavedIds, saveEmails } from './db.js';
 
+const DEFAULT_CREDENTIALS_PATH = join(homedir(), '.config', 'gmail-downloader', 'access.json');
+
 interface Options {
+  credentials?: string;
   db: string;
   token: string;
   allMail?: boolean;
@@ -16,14 +22,28 @@ const program = new Command();
 program
   .name('gmail-downloader')
   .description('Download emails from a sender into SQLite and print them as JSON')
-  .argument('<credentials>', 'path to the Google OAuth client JSON file')
   .argument('<sender>', 'email address or domain to look for (e.g. ziprecruiter.com)')
+  .option(
+    '-c, --credentials <path>',
+    `path to the Google OAuth client JSON file (default: ${DEFAULT_CREDENTIALS_PATH})`,
+  )
   .option('-d, --db <path>', 'SQLite file to write', 'emails.sqlite')
   .option('-t, --token <path>', 'where to cache the OAuth token', 'token.json')
   .option('--all-mail', 'search all mail instead of only the inbox')
   .option('-l, --label <name>', 'only search messages with this Gmail label (replaces the inbox scope)')
   .option('--limit-date <YYYY-MM-DD>', 'only search emails on or after this date')
-  .action(async (credentials: string, sender: string, opts: Options) => {
+  .action(async (sender: string, opts: Options) => {
+    let credentials = opts.credentials;
+    if (credentials === undefined) {
+      if (!existsSync(DEFAULT_CREDENTIALS_PATH)) {
+        throw new Error(
+          `no credentials file: pass --credentials <path> or place the Google OAuth client JSON at ${DEFAULT_CREDENTIALS_PATH}`,
+        );
+      }
+      credentials = DEFAULT_CREDENTIALS_PATH;
+    } else if (!existsSync(credentials)) {
+      throw new Error(`credentials file not found: ${credentials}`);
+    }
     const scope = opts.label
       ? `label:"${opts.label.replaceAll('"', '')}" `
       : opts.allMail
