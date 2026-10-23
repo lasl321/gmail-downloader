@@ -7,6 +7,7 @@ import { fetchEmails } from './gmail.js';
 import { getEmailsByIds, getSavedIds, saveEmails } from './db.js';
 import { saveEmailFiles } from './files.js';
 
+const OUTPUT_DIR = 'output';
 const DEFAULT_CREDENTIALS_PATH = join(homedir(), '.config', 'gmail-downloader', 'access.json');
 
 interface Options {
@@ -36,7 +37,7 @@ program
   .option('--limit-date <YYYY-MM-DD>', 'only search emails on or after this date')
   .option(
     '--save-files',
-    'also save each email as <subject>.txt in a YYYY-MM-DD/ folder (includes emails already in SQLite)',
+    'also save each email as <subject>.txt in output/YYYY-MM-DD/ (includes emails already in SQLite)',
   )
   .action(async (sender: string, opts: Options) => {
     let credentials = opts.credentials;
@@ -74,7 +75,7 @@ program
     });
     saveEmails(opts.db, emails);
     if (opts.saveFiles) {
-      const dir = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD in local time
+      const dir = join(OUTPUT_DIR, new Date().toLocaleDateString('sv-SE')); // YYYY-MM-DD in local time
       const all = [...emails, ...getEmailsByIds(opts.db, skippedIds)];
       saveEmailFiles(dir, all);
       process.stderr.write(`Saved ${all.length} file(s) to ${dir}/\n`);

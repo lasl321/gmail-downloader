@@ -21,7 +21,7 @@ If the sender is missing, ask for it before running anything. If the user gives 
 - User names a Gmail label → `--label "<name>"` (replaces the inbox scope).
 - User asks for all emails / all mail / everywhere → `--all-mail`.
 - User gives a start date → `--limit-date YYYY-MM-DD` (emails on or after that date).
-- User wants emails as text files → `--save-files` (writes `<subject>.txt` into a `YYYY-MM-DD/` folder for today, including emails already in SQLite).
+- User wants emails as text files → `--save-files` (writes `<subject>.txt` into `output/YYYY-MM-DD/` for today, including emails already in SQLite).
 
 ## Run
 
