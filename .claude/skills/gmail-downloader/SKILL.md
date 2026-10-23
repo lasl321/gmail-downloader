@@ -21,14 +21,14 @@ If the sender is missing, ask for it before running anything. If the user gives 
 - User names a Gmail label → `--label "<name>"` (replaces the inbox scope).
 - User asks for all emails / all mail / everywhere → `--all-mail`.
 - User gives a start date → `--limit-date YYYY-MM-DD` (emails on or after that date).
-- User wants emails as text files → `--save-files` (writes `<subject>.txt` into `output/YYYY-MM-DD/` for today, including emails already in SQLite).
+- User wants emails as text files → `--save-files [dir]` (`dir` defaults to `output` in the repo root; writes `<subject>.txt` into `<dir>/YYYY-MM-DD/` for today, including emails already in SQLite).
 
 ## Run
 
 Run from the repo root (`/Users/lasl321/code/gmail-downloader`), because the default `--db` (`emails.sqlite`) and `--token` (`token.json`) paths are relative to the working directory. Use an absolute path for `--credentials`.
 
 ```bash
-cd /Users/lasl321/code/gmail-downloader && npm --silent start -- "<sender>" [--credentials "<abs-path-to-client.json>"] [--label "<name>" | --all-mail] [--limit-date YYYY-MM-DD] [--save-files]
+cd /Users/lasl321/code/gmail-downloader && npm --silent start -- "<sender>" [--credentials "<abs-path-to-client.json>"] [--label "<name>" | --all-mail] [--limit-date YYYY-MM-DD] [--save-files [dir]]
 ```
 
 `npm start` builds first (`prestart`). Run `npm install` first only if `node_modules` is missing.
