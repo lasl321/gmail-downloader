@@ -53,7 +53,7 @@ Treat this file as a secret. It is already covered by `.gitignore` (`client_secr
 ## 3. Run it
 
 ```bash
-npm start -- <sender> [options]
+npm start -- [sender] [options]
 ```
 
 `npm start` compiles the TypeScript first. Add `--silent` (`npm --silent start -- ...`) to hide npm's own output so only the tool's JSON appears on stdout. Progress messages go to stderr.
@@ -61,6 +61,9 @@ npm start -- <sender> [options]
 Examples:
 
 ```bash
+# Every email in the inbox (no sender)
+npm start
+
 # All inbox emails from a domain
 npm start -- ziprecruiter.com
 
@@ -91,7 +94,7 @@ The resulting token is cached in `token.json` (in the directory you ran the comm
 
 | Option | Description |
 | --- | --- |
-| `<sender>` | Required. Email address or domain to search for (`from:` in Gmail). |
+| `[sender]` | Optional. Email address or domain to search for (`from:` in Gmail). If omitted, all emails in scope (the inbox by default) are downloaded. |
 | `-c, --credentials <path>` | Google OAuth client JSON. Default: `~/.config/gmail-downloader/access.json`. |
 | `-d, --db <path>` | SQLite file to write. Default: `emails.sqlite`. |
 | `-t, --token <path>` | Where to cache the OAuth token. Default: `token.json`. |

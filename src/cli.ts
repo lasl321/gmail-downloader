@@ -23,8 +23,8 @@ const program = new Command();
 
 program
   .name('gmail-downloader')
-  .description('Download emails from a sender into SQLite and print them as JSON')
-  .argument('<sender>', 'email address or domain to look for (e.g. ziprecruiter.com)')
+  .description('Download emails (from a sender, or all inbox emails if none) into SQLite and print them as JSON')
+  .argument('[sender]', 'email address or domain to look for (e.g. ziprecruiter.com); omit to download everything in scope')
   .option(
     '-c, --credentials <path>',
     `path to the Google OAuth client JSON file (default: ${DEFAULT_CREDENTIALS_PATH})`,
@@ -40,7 +40,7 @@ program
       'also save each email as <subject>.txt in <dir>/YYYY-MM-DD/ (includes emails already in SQLite)',
     ).preset('output'),
   )
-  .action(async (sender: string, opts: Options) => {
+  .action(async (sender: string | undefined, opts: Options) => {
     let credentials = opts.credentials;
     if (credentials === undefined) {
       if (!existsSync(DEFAULT_CREDENTIALS_PATH)) {
@@ -67,7 +67,7 @@ program
       }
       dateFilter = ` after:${m[1]}/${m[2]}/${m[3]}`;
     }
-    const query = `${scope}from:${sender}${dateFilter}`;
+    const query = `${scope}${sender ? `from:${sender}` : ''}${dateFilter}`.trim();
     const { emails, skippedIds } = await fetchEmails({
       credentialsPath: credentials,
       tokenPath: opts.token,
