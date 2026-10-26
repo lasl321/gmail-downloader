@@ -3,7 +3,7 @@
 A command-line tool that downloads emails from one or more senders (an address like `jobs@example.com` or a whole domain like `example.com`) using the Gmail API. Each email is:
 
 - stored in a local SQLite file (`emails.sqlite`), so later runs only fetch new messages,
-- printed to stdout as JSON, and
+- printed to stdout as a table, and
 - optionally saved as a plain-text file (`--save-files`).
 
 The tool is **read-only**: it requests only the `gmail.readonly` scope and never modifies or deletes your mail.
@@ -56,7 +56,7 @@ Treat this file as a secret. It is already covered by `.gitignore` (`client_secr
 npm start -- [options]
 ```
 
-`npm start` compiles the TypeScript first. Add `--silent` (`npm --silent start -- ...`) to hide npm's own output so only the tool's JSON appears on stdout. Progress messages go to stderr.
+`npm start` compiles the TypeScript first. Add `--silent` (`npm --silent start -- ...`) to hide npm's own output so only the table appears on stdout. Progress messages go to stderr.
 
 Examples:
 
@@ -110,7 +110,7 @@ By default the search covers the inbox only.
 
 ## Output
 
-- **stdout**: a JSON array of the *new* emails from this run, each with `from`, `to`, `subject`, `textBody`, and `htmlBody`. An empty array (`[]`) means nothing new was found. Redirect it to a file if you want to keep it: `npm --silent start -- --sender example.com > new.json`.
+- **stdout**: a table (`Received`, `From`, `Subject`) of every email considered in this run, including ones already in SQLite, sorted by receive date (oldest first). On a terminal, long subjects are truncated to fit the width. No output means nothing matched. Redirect it to keep it: `npm --silent start -- --sender example.com > emails.txt`.
 - **`emails.sqlite`**: every email downloaded so far. Re-running skips messages already stored, so it is safe to run repeatedly.
 - **`output/YYYY-MM-DD/*.txt`** (with `--save-files`): one text file per email, with `From`, `To`, and `Subject` headers followed by the plain-text body.
 

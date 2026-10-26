@@ -16,13 +16,13 @@ Runs this repo's CLI once per job board, in order, using the `gmail-downloader` 
 
 ## Run
 
-Verify `~/.config/gmail-downloader/access.json` exists first. Then run the three commands sequentially (not in parallel: they share `emails.sqlite` and `token.json`). Send stdout to a scratch file, since each prints a JSON array of full email bodies; stderr carries the progress lines.
+Verify `~/.config/gmail-downloader/access.json` exists first. Then run the three commands sequentially (not in parallel: they share `emails.sqlite` and `token.json`). Send stdout to a scratch file, since each prints a table of every email considered; stderr carries the progress lines.
 
 ```bash
 cd /Users/lasl321/code/gmail-downloader
 for s in linkedin.com ziprecruiter.com builtin.com; do
   echo "== $s" >&2
-  npm --silent start -- --sender "$s" --limit-date "$(date +%F)" --save-files [dir] [extra flags] > "<scratchpad>/$s.json"
+  npm --silent start -- --sender "$s" --limit-date "$(date +%F)" --save-files [dir] [extra flags] > "<scratchpad>/$s.txt"
 done
 ```
 
@@ -35,4 +35,4 @@ See the `gmail-downloader` skill for the full flag behavior; the first run may o
 
 ## Reporting
 
-Per sender: how many messages were found, how many were already saved, how many are new (length of the JSON array), and the new subjects. Then the total number of files in `output/YYYY-MM-DD/`. Do not dump bodies unless asked.
+Per sender: how many messages were found, how many were already saved, and the subjects (stdout lists all considered, new and cached; new = found minus already saved). Then the total number of files in `output/YYYY-MM-DD/`. Do not dump bodies unless asked.

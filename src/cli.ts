@@ -20,11 +20,28 @@ interface Options {
   saveFiles?: string;
 }
 
+type Row = [received: string, from: string, subject: string];
+
+function renderTable(rows: Row[]): string {
+  const all: Row[] = [['Received', 'From', 'Subject'], ...rows];
+  const w0 = Math.max(...all.map((r) => r[0].length));
+  const w1 = Math.max(...all.map((r) => r[1].length));
+  let w2 = Math.max(...all.map((r) => r[2].length));
+  // On a terminal, shrink the subject column so lines don't wrap.
+  if (process.stdout.columns) w2 = Math.max('Subject'.length, Math.min(w2, process.stdout.columns - w0 - w1 - 10));
+  const fit = (text: string, w: number) => (text.length > w ? `${text.slice(0, w - 1)}…` : text).padEnd(w);
+  const line = ([a, b, c]: Row) => `│ ${fit(a, w0)} │ ${fit(b, w1)} │ ${fit(c, w2)} │`;
+  const rule = (l: string, m: string, r: string) =>
+    l + [w0, w1, w2].map((w) => '─'.repeat(w + 2)).join(m) + r;
+  const [header, ...body] = all;
+  return [rule('┌', '┬', '┐'), line(header!), rule('├', '┼', '┤'), ...body.map(line), rule('└', '┴', '┘')].join('\n') + '\n';
+}
+
 const program = new Command();
 
 program
   .name('gmail-downloader')
-  .description('Download emails (from one or more senders, or all inbox emails if none) into SQLite and print them as JSON')
+  .description('Download emails (from one or more senders, or all inbox emails if none) into SQLite and print them as a table')
   .option(
     '-s, --sender <address-or-domain>',
     'email address or domain to look for (e.g. ziprecruiter.com); repeat for multiple senders; omit to download everything in scope',
@@ -83,25 +100,21 @@ program
       skipIds: getSavedIds(opts.db),
     });
     saveEmails(opts.db, emails);
+    const all = [...emails, ...getEmailsByIds(opts.db, skippedIds)];
     if (opts.saveFiles) {
       const dir = join(opts.saveFiles, new Date().toLocaleDateString('sv-SE')); // YYYY-MM-DD in local time
-      const all = [...emails, ...getEmailsByIds(opts.db, skippedIds)];
       saveEmailFiles(dir, all);
       process.stderr.write(`Saved ${all.length} file(s) to ${dir}/\n`);
     }
-    process.stdout.write(
-      JSON.stringify(
-        emails.map(({ from, to, subject, textBody, htmlBody }) => ({
-          from,
-          to,
-          subject,
-          textBody,
-          htmlBody,
-        })),
-        null,
-        2,
-      ) + '\n',
-    );
+    all.sort((a, b) => a.receivedAt.localeCompare(b.receivedAt));
+    if (all.length) {
+      const rows = all.map((e): Row => [
+        new Date(e.receivedAt).toLocaleString('sv-SE').slice(0, 16), // YYYY-MM-DD HH:MM in local time
+        e.from.email,
+        e.subject,
+      ]);
+      process.stdout.write(renderTable(rows));
+    }
   });
 
 program.parseAsync().catch((err: unknown) => {

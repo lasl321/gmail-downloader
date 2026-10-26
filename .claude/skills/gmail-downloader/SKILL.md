@@ -1,6 +1,6 @@
 ---
 name: gmail-downloader
-description: Download emails from a sender (email address or domain) via the Gmail API into SQLite and print them as JSON. Use when the user wants to fetch/download/search Gmail messages from a sender, given a Google OAuth client JSON file.
+description: Download emails from a sender (email address or domain) via the Gmail API into SQLite and print them as a table. Use when the user wants to fetch/download/search Gmail messages from a sender, given a Google OAuth client JSON file.
 argument-hint: <client-json-path> <email-or-domain> [label <name> | all mail] [after <YYYY-MM-DD>]
 ---
 
@@ -36,7 +36,7 @@ cd /Users/lasl321/code/gmail-downloader && npm --silent start -- [--sender "<sen
 ## Behavior to know about
 
 - First run opens a browser for Google OAuth consent and caches the token in `token.json`. Warn the user that a browser window may open, and that a long-running command may be waiting on them.
-- Emails already saved in `emails.sqlite` are skipped, so stdout contains only **new** emails (a JSON array of `{from, to, subject, textBody, htmlBody}`). An empty array means nothing new.
+- Emails already saved in `emails.sqlite` are not re-downloaded, but stdout still prints a table (Received, From, Subject) of every email considered (new and cached), oldest first. Empty output means nothing matched.
 - Errors go to stderr with exit code 1.
 
 ## Reporting
