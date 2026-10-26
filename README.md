@@ -2,7 +2,7 @@
 
 A command-line tool that downloads emails from one or more senders (an address like `jobs@example.com` or a whole domain like `example.com`) using the Gmail API. Each email is:
 
-- stored in a local SQLite file (`emails.sqlite`), so later runs only fetch new messages,
+- stored in a local SQLite file (`~/.config/gmail-downloader/emails.sqlite`), so later runs only fetch new messages,
 - printed to stdout as a table, and
 - optionally saved as a plain-text file (`--save-files`).
 
@@ -99,7 +99,7 @@ The resulting token is cached in `token.json` (in the directory you ran the comm
 | --- | --- |
 | `-s, --sender <address-or-domain>` | Optional, repeatable. Email address or domain to search for (`from:` in Gmail). With several `--sender` flags, emails from any of them match. If omitted, all emails in scope (the inbox by default) are downloaded. |
 | `-c, --credentials <path>` | Google OAuth client JSON. Default: `~/.config/gmail-downloader/access.json`. |
-| `-d, --db <path>` | SQLite file to write. Default: `emails.sqlite`. |
+| `-d, --db <path>` | SQLite file to write. Default: `~/.config/gmail-downloader/emails.sqlite`. |
 | `-t, --token <path>` | Where to cache the OAuth token. Default: `token.json`. |
 | `--all-mail` | Search all mail instead of only the inbox. |
 | `-l, --label <name>` | Only search messages with this Gmail label (replaces the inbox scope). |
@@ -111,10 +111,10 @@ By default the search covers the inbox only.
 ## Output
 
 - **stdout**: a table (`Received`, `From`, `Subject`) of every email considered in this run, including ones already in SQLite, sorted by receive date (oldest first). On a terminal, long subjects are truncated to fit the width. No output means nothing matched. Redirect it to keep it: `npm --silent start -- --sender example.com > emails.txt`.
-- **`emails.sqlite`**: every email downloaded so far. Re-running skips messages already stored, so it is safe to run repeatedly.
+- **`~/.config/gmail-downloader/emails.sqlite`** (or the `--db` path): every email downloaded so far. Re-running skips messages already stored, so it is safe to run repeatedly.
 - **`output/YYYY-MM-DD/*.txt`** (with `--save-files`): one text file per email, with `From`, `To`, and `Subject` headers followed by the plain-text body.
 
-The files `emails.sqlite`, `token.json`, and `output/` are gitignored because they contain your personal email.
+The files `token.json` and `output/` are gitignored because they contain your personal email.
 
 ## Troubleshooting
 

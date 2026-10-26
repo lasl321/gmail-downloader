@@ -1,7 +1,10 @@
+import { mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import type { Email } from './gmail.js';
 
 function openDb(path: string): DatabaseSync {
+  mkdirSync(dirname(path), { recursive: true });
   const db = new DatabaseSync(path);
   db.exec(`
     CREATE TABLE IF NOT EXISTS emails (

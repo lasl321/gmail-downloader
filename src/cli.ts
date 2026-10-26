@@ -9,10 +9,12 @@ import { saveEmailFiles } from './files.js';
 
 const DEFAULT_CREDENTIALS_PATH = join(homedir(), '.config', 'gmail-downloader', 'access.json');
 
+const DEFAULT_DB_PATH = join(homedir(), '.config', 'gmail-downloader', 'emails.sqlite');
+
 interface Options {
   sender: string[];
   credentials?: string;
-  db: string;
+  db?: string;
   token: string;
   allMail?: boolean;
   label?: string;
@@ -52,7 +54,7 @@ program
     '-c, --credentials <path>',
     `path to the Google OAuth client JSON file (default: ${DEFAULT_CREDENTIALS_PATH})`,
   )
-  .option('-d, --db <path>', 'SQLite file to write', 'emails.sqlite')
+  .option('-d, --db <path>', `SQLite file to write (default: ${DEFAULT_DB_PATH})`)
   .option('-t, --token <path>', 'where to cache the OAuth token', 'token.json')
   .option('--all-mail', 'search all mail instead of only the inbox')
   .option('-l, --label <name>', 'only search messages with this Gmail label (replaces the inbox scope)')
@@ -75,6 +77,7 @@ program
     } else if (!existsSync(credentials)) {
       throw new Error(`credentials file not found: ${credentials}`);
     }
+    const dbPath = opts.db ?? DEFAULT_DB_PATH;
     const scope = opts.label
       ? `label:"${opts.label.replaceAll('"', '')}" `
       : opts.allMail
@@ -97,10 +100,10 @@ program
       credentialsPath: credentials,
       tokenPath: opts.token,
       query,
-      skipIds: getSavedIds(opts.db),
+      skipIds: getSavedIds(dbPath),
     });
-    saveEmails(opts.db, emails);
-    const all = [...emails, ...getEmailsByIds(opts.db, skippedIds)];
+    saveEmails(dbPath, emails);
+    const all = [...emails, ...getEmailsByIds(dbPath, skippedIds)];
     if (opts.saveFiles) {
       const dir = join(opts.saveFiles, new Date().toLocaleDateString('sv-SE')); // YYYY-MM-DD in local time
       saveEmailFiles(dir, all);
