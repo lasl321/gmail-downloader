@@ -1,6 +1,6 @@
 # gmail-downloader
 
-A command-line tool that downloads emails from a given sender (an address like `jobs@example.com` or a whole domain like `example.com`) using the Gmail API. Each email is:
+A command-line tool that downloads emails from one or more senders (an address like `jobs@example.com` or a whole domain like `example.com`) using the Gmail API. Each email is:
 
 - stored in a local SQLite file (`emails.sqlite`), so later runs only fetch new messages,
 - printed to stdout as JSON, and
@@ -53,7 +53,7 @@ Treat this file as a secret. It is already covered by `.gitignore` (`client_secr
 ## 3. Run it
 
 ```bash
-npm start -- [sender] [options]
+npm start -- [options]
 ```
 
 `npm start` compiles the TypeScript first. Add `--silent` (`npm --silent start -- ...`) to hide npm's own output so only the tool's JSON appears on stdout. Progress messages go to stderr.
@@ -65,16 +65,19 @@ Examples:
 npm start
 
 # All inbox emails from a domain
-npm start -- ziprecruiter.com
+npm start -- --sender ziprecruiter.com
+
+# Several senders at once (repeat --sender)
+npm start -- --sender linkedin.com --sender ziprecruiter.com
 
 # A single address, using a credentials file in another location
-npm start -- jobs@example.com --credentials ~/secrets/client_secret_abc.json
+npm start -- --sender jobs@example.com --credentials ~/secrets/client_secret_abc.json
 
 # Only emails on/after a date, searching all mail instead of just the inbox
-npm start -- example.com --all-mail --limit-date 2026-01-01
+npm start -- --sender example.com --all-mail --limit-date 2026-01-01
 
 # Only messages with a Gmail label, also writing each email to output/<today>/
-npm start -- linkedin.com --label "Professional/Jobs" --save-files
+npm start -- --sender linkedin.com --label "Professional/Jobs" --save-files
 ```
 
 ### First run: authorizing access
@@ -94,7 +97,7 @@ The resulting token is cached in `token.json` (in the directory you ran the comm
 
 | Option | Description |
 | --- | --- |
-| `[sender]` | Optional. Email address or domain to search for (`from:` in Gmail). If omitted, all emails in scope (the inbox by default) are downloaded. |
+| `-s, --sender <address-or-domain>` | Optional, repeatable. Email address or domain to search for (`from:` in Gmail). With several `--sender` flags, emails from any of them match. If omitted, all emails in scope (the inbox by default) are downloaded. |
 | `-c, --credentials <path>` | Google OAuth client JSON. Default: `~/.config/gmail-downloader/access.json`. |
 | `-d, --db <path>` | SQLite file to write. Default: `emails.sqlite`. |
 | `-t, --token <path>` | Where to cache the OAuth token. Default: `token.json`. |
@@ -107,7 +110,7 @@ By default the search covers the inbox only.
 
 ## Output
 
-- **stdout**: a JSON array of the *new* emails from this run, each with `from`, `to`, `subject`, `textBody`, and `htmlBody`. An empty array (`[]`) means nothing new was found. Redirect it to a file if you want to keep it: `npm --silent start -- example.com > new.json`.
+- **stdout**: a JSON array of the *new* emails from this run, each with `from`, `to`, `subject`, `textBody`, and `htmlBody`. An empty array (`[]`) means nothing new was found. Redirect it to a file if you want to keep it: `npm --silent start -- --sender example.com > new.json`.
 - **`emails.sqlite`**: every email downloaded so far. Re-running skips messages already stored, so it is safe to run repeatedly.
 - **`output/YYYY-MM-DD/*.txt`** (with `--save-files`): one text file per email, with `From`, `To`, and `Subject` headers followed by the plain-text body.
 

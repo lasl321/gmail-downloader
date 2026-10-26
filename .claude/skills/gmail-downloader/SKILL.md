@@ -11,9 +11,9 @@ Runs this repo's CLI (`src/cli.ts`, built to `dist/cli.js`).
 ## Required inputs
 
 1. **Client JSON file** (optional): path to the Google OAuth client secret JSON. If not given, the CLI uses `~/.config/gmail-downloader/access.json` and errors if that is missing too.
-2. **Sender**: an email address (`jobs@example.com`) or domain (`example.com`).
+2. **Sender(s)**: one or more email addresses (`jobs@example.com`) or domains (`example.com`), each passed as `--sender`; repeat the flag for several.
 
-The sender is optional: if the user wants all inbox emails (or gives no sender), omit it and the whole inbox is downloaded. If the user gives a client JSON path, verify it exists; otherwise verify `~/.config/gmail-downloader/access.json` exists.
+Senders are optional: if the user wants all inbox emails (or gives no sender), omit `--sender` and the whole inbox is downloaded. If the user gives a client JSON path, verify it exists; otherwise verify `~/.config/gmail-downloader/access.json` exists.
 
 ## Scope (default: inbox only)
 
@@ -28,7 +28,7 @@ The sender is optional: if the user wants all inbox emails (or gives no sender),
 Run from the repo root (`/Users/lasl321/code/gmail-downloader`), because the default `--db` (`emails.sqlite`) and `--token` (`token.json`) paths are relative to the working directory. Use an absolute path for `--credentials`.
 
 ```bash
-cd /Users/lasl321/code/gmail-downloader && npm --silent start -- ["<sender>"] [--credentials "<abs-path-to-client.json>"] [--label "<name>" | --all-mail] [--limit-date YYYY-MM-DD] [--save-files [dir]]
+cd /Users/lasl321/code/gmail-downloader && npm --silent start -- [--sender "<sender>" ...] [--credentials "<abs-path-to-client.json>"] [--label "<name>" | --all-mail] [--limit-date YYYY-MM-DD] [--save-files [dir]]
 ```
 
 `npm start` builds first (`prestart`). Run `npm install` first only if `node_modules` is missing.

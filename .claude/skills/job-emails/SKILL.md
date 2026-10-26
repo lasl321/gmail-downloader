@@ -22,7 +22,7 @@ Verify `~/.config/gmail-downloader/access.json` exists first. Then run the three
 cd /Users/lasl321/code/gmail-downloader
 for s in linkedin.com ziprecruiter.com builtin.com; do
   echo "== $s" >&2
-  npm --silent start -- "$s" --limit-date "$(date +%F)" --save-files [dir] [extra flags] > "<scratchpad>/$s.json"
+  npm --silent start -- --sender "$s" --limit-date "$(date +%F)" --save-files [dir] [extra flags] > "<scratchpad>/$s.json"
 done
 ```
 
