@@ -19,6 +19,8 @@ export interface Email {
   subject: string;
   textBody: string;
   htmlBody: string;
+  /** When Gmail received the message, as an ISO 8601 UTC timestamp. */
+  receivedAt: string;
 }
 
 export interface FetchResult {
@@ -81,6 +83,7 @@ async function fetchOne(gmail: gmail_v1.Gmail, id: string): Promise<Email> {
     subject: parsed.subject ?? '',
     textBody: (parsed.text ?? '').replace(/\r\n/g, '\n'),
     htmlBody: (parsed.html || '').replace(/\r\n/g, '\n'),
+    receivedAt: new Date(Number(data.internalDate)).toISOString(),
   };
 }
 

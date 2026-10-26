@@ -24,10 +24,10 @@ export function saveEmailFiles(dir: string, emails: Email[]): string {
     if (used.has(name)) name = `${fileStem(e.subject)} (${e.id}).${ext}`;
     used.add(name);
     if (htmlOnly) {
-      writeFileSync(join(dir, name), e.htmlBody);
+      writeFileSync(join(dir, name), `<!-- Received: ${e.receivedAt} -->\n${e.htmlBody}`);
       continue;
     }
-    const header = `From: ${e.from.name} <${e.from.email}>\nTo: ${e.to.name} <${e.to.email}>\nSubject: ${e.subject}\n\n`;
+    const header = `From: ${e.from.name} <${e.from.email}>\nTo: ${e.to.name} <${e.to.email}>\nSubject: ${e.subject}\nReceived: ${e.receivedAt}\n\n`;
     writeFileSync(join(dir, name), header + e.textBody);
   }
   return dir;

@@ -12,15 +12,10 @@ function openDb(path: string): DatabaseSync {
       to_email   TEXT NOT NULL,
       subject    TEXT NOT NULL,
       text_body  TEXT NOT NULL,
-      html_body  TEXT NOT NULL DEFAULT ''
+      html_body  TEXT NOT NULL DEFAULT '',
+      received_at TEXT NOT NULL
     )
   `);
-  // migrate databases created with the old single `body` column
-  const cols = db.prepare('PRAGMA table_info(emails)').all().map((c) => c['name']);
-  if (cols.includes('body')) db.exec('ALTER TABLE emails RENAME COLUMN body TO text_body');
-  if (!cols.includes('html_body')) {
-    db.exec(`ALTER TABLE emails ADD COLUMN html_body TEXT NOT NULL DEFAULT ''`);
-  }
   return db;
 }
 
@@ -37,13 +32,13 @@ export function saveEmails(path: string, emails: Email[]): void {
   const db = openDb(path);
   const insert = db.prepare(
     `INSERT OR REPLACE INTO emails
-       (gmail_id, from_name, from_email, to_name, to_email, subject, text_body, html_body)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+       (gmail_id, from_name, from_email, to_name, to_email, subject, text_body, html_body, received_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   );
   db.exec('BEGIN');
   try {
     for (const e of emails) {
-      insert.run(e.id, e.from.name, e.from.email, e.to.name, e.to.email, e.subject, e.textBody, e.htmlBody);
+      insert.run(e.id, e.from.name, e.from.email, e.to.name, e.to.email, e.subject, e.textBody, e.htmlBody, e.receivedAt);
     }
     db.exec('COMMIT');
   } catch (err) {
@@ -68,6 +63,7 @@ export function getEmailsByIds(path: string, ids: Set<string>): Email[] {
         subject: r['subject'] as string,
         textBody: r['text_body'] as string,
         htmlBody: r['html_body'] as string,
+        receivedAt: r['received_at'] as string,
       }));
   } finally {
     db.close();
