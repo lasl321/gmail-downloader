@@ -1,0 +1,119 @@
+# gmail-downloader
+
+A command-line tool that downloads emails from a given sender (an address like `jobs@example.com` or a whole domain like `example.com`) using the Gmail API. Each email is:
+
+- stored in a local SQLite file (`emails.sqlite`), so later runs only fetch new messages,
+- printed to stdout as JSON, and
+- optionally saved as a plain-text file (`--save-files`).
+
+The tool is **read-only**: it requests only the `gmail.readonly` scope and never modifies or deletes your mail.
+
+## Requirements
+
+- Node.js 22.13 or newer
+- A Google account with Gmail
+- A Google OAuth client file (see below — you create this once, for free)
+
+## 1. Install
+
+```bash
+npm install
+```
+
+## 2. Get a Google OAuth client file (one-time setup)
+
+Google requires every app that reads Gmail to identify itself with an OAuth client. Since this tool runs on your own machine, you create your own client in the Google Cloud Console and download it as a JSON file. No paid license or billing is needed.
+
+1. Go to <https://console.cloud.google.com/> and sign in with the Google account whose Gmail you want to download.
+2. **Create a project**: click the project picker at the top, choose **New Project**, name it (e.g. `gmail-downloader`), and create it. Make sure it is selected.
+3. **Enable the Gmail API**: open **APIs & Services → Library**, search for **Gmail API**, and click **Enable**.
+4. **Configure the consent screen**: open **APIs & Services → OAuth consent screen** (in newer consoles: **Google Auth Platform**) and click **Get started**.
+   - App name: anything (e.g. `gmail-downloader`); support email: your address.
+   - Audience: **External** (choose **Internal** only if you are on a Google Workspace account and the mailbox belongs to your organization).
+   - Contact email: your address. Accept the terms and create.
+5. **Add yourself as a test user**: under **Audience** (or **OAuth consent screen → Test users**), click **Add users** and enter the Gmail address you will download from. While the app is in "Testing" status, only listed test users can authorize it.
+6. **Create the client**: open **APIs & Services → Credentials → Create credentials → OAuth client ID**.
+   - Application type: **Desktop app**.
+   - Name: anything. Click **Create**.
+7. Click **Download JSON** on the dialog (or the download icon next to the client in the Credentials list). You now have a file named like `client_secret_123456-abc.apps.googleusercontent.com.json`.
+
+### Where to put the file
+
+Either move it to the default location, which the tool checks automatically:
+
+```bash
+mkdir -p ~/.config/gmail-downloader
+mv ~/Downloads/client_secret_*.json ~/.config/gmail-downloader/access.json
+```
+
+or keep it anywhere and pass `--credentials <path>` on every run.
+
+Treat this file as a secret. It is already covered by `.gitignore` (`client_secret_*.json`), but don't commit or share it under another name.
+
+## 3. Run it
+
+```bash
+npm start -- <sender> [options]
+```
+
+`npm start` compiles the TypeScript first. Add `--silent` (`npm --silent start -- ...`) to hide npm's own output so only the tool's JSON appears on stdout. Progress messages go to stderr.
+
+Examples:
+
+```bash
+# All inbox emails from a domain
+npm start -- ziprecruiter.com
+
+# A single address, using a credentials file in another location
+npm start -- jobs@example.com --credentials ~/secrets/client_secret_abc.json
+
+# Only emails on/after a date, searching all mail instead of just the inbox
+npm start -- example.com --all-mail --limit-date 2026-01-01
+
+# Only messages with a Gmail label, also writing each email to output/<today>/
+npm start -- linkedin.com --label "Professional/Jobs" --save-files
+```
+
+### First run: authorizing access
+
+The first time you run the tool, it opens your browser to a Google consent page.
+
+1. Choose the Google account you added as a test user.
+2. You will see **"Google hasn't verified this app."** This is expected — you created the app yourself. Click **Advanced → Go to <app name> (unsafe)**.
+3. Approve **"View your email messages and settings"** (this is the read-only scope).
+4. The browser says authentication succeeded; return to the terminal.
+
+The resulting token is cached in `token.json` (in the directory you ran the command from), so later runs don't open the browser. Delete `token.json` to re-authorize or switch accounts.
+
+> **Token expiry:** while your OAuth consent screen is in "Testing" status, Google expires the token after about 7 days. If you get an authorization error, delete `token.json` and run again to re-authorize.
+
+## Options
+
+| Option | Description |
+| --- | --- |
+| `<sender>` | Required. Email address or domain to search for (`from:` in Gmail). |
+| `-c, --credentials <path>` | Google OAuth client JSON. Default: `~/.config/gmail-downloader/access.json`. |
+| `-d, --db <path>` | SQLite file to write. Default: `emails.sqlite`. |
+| `-t, --token <path>` | Where to cache the OAuth token. Default: `token.json`. |
+| `--all-mail` | Search all mail instead of only the inbox. |
+| `-l, --label <name>` | Only search messages with this Gmail label (replaces the inbox scope). |
+| `--limit-date <YYYY-MM-DD>` | Only search emails on or after this date. |
+| `--save-files [dir]` | Also save each email as `<subject>.txt` in `<dir>/YYYY-MM-DD/` (today's date). `dir` defaults to `output`. Includes emails already in SQLite. |
+
+By default the search covers the inbox only.
+
+## Output
+
+- **stdout**: a JSON array of the *new* emails from this run, each with `from`, `to`, `subject`, `textBody`, and `htmlBody`. An empty array (`[]`) means nothing new was found. Redirect it to a file if you want to keep it: `npm --silent start -- example.com > new.json`.
+- **`emails.sqlite`**: every email downloaded so far. Re-running skips messages already stored, so it is safe to run repeatedly.
+- **`output/YYYY-MM-DD/*.txt`** (with `--save-files`): one text file per email, with `From`, `To`, and `Subject` headers followed by the plain-text body.
+
+The files `emails.sqlite`, `token.json`, and `output/` are gitignored because they contain your personal email.
+
+## Troubleshooting
+
+- **`no credentials file`**: put the OAuth JSON at `~/.config/gmail-downloader/access.json` or pass `--credentials <path>`.
+- **`Error 403: access_denied` in the browser**: the Google account isn't listed as a test user. Add it under the OAuth consent screen's test users (step 5).
+- **`Gmail API has not been used in project ... or it is disabled`**: enable the Gmail API for the project (step 3), wait a minute, and retry.
+- **Authorization suddenly fails after a few days**: delete `token.json` and re-run (see token expiry above).
+- **`--limit-date must be a valid date`**: use the `YYYY-MM-DD` format, e.g. `2026-03-31`.
