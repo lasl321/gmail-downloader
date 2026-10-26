@@ -13,14 +13,20 @@ function fileStem(subject: string): string {
   return stem === '' || /^\.+$/.test(stem) ? '(no subject)' : stem;
 }
 
-/** Writes each email to `<dir>/<subject>.txt`; returns the directory written to. */
+/** Writes each email to `<dir>/<subject>.txt` (`.html` if it has only an HTML body); returns the directory written to. */
 export function saveEmailFiles(dir: string, emails: Email[]): string {
   mkdirSync(dir, { recursive: true });
   const used = new Set<string>();
   for (const e of [...emails].sort((a, b) => a.id.localeCompare(b.id))) {
-    let name = `${fileStem(e.subject)}.txt`;
-    if (used.has(name)) name = `${fileStem(e.subject)} (${e.id}).txt`;
+    const htmlOnly = e.textBody.trim() === '' && e.htmlBody.trim() !== '';
+    const ext = htmlOnly ? 'html' : 'txt';
+    let name = `${fileStem(e.subject)}.${ext}`;
+    if (used.has(name)) name = `${fileStem(e.subject)} (${e.id}).${ext}`;
     used.add(name);
+    if (htmlOnly) {
+      writeFileSync(join(dir, name), e.htmlBody);
+      continue;
+    }
     const header = `From: ${e.from.name} <${e.from.email}>\nTo: ${e.to.name} <${e.to.email}>\nSubject: ${e.subject}\n\n`;
     writeFileSync(join(dir, name), header + e.textBody);
   }

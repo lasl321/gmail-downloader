@@ -21,7 +21,7 @@ The sender is optional: if the user wants all inbox emails (or gives no sender),
 - User names a Gmail label → `--label "<name>"` (replaces the inbox scope).
 - User asks for all emails / all mail / everywhere → `--all-mail`.
 - User gives a start date → `--limit-date YYYY-MM-DD` (emails on or after that date).
-- User wants emails as text files → `--save-files [dir]` (`dir` defaults to `output` in the repo root; writes `<subject>.txt` into `<dir>/YYYY-MM-DD/` for today, including emails already in SQLite).
+- User wants emails as text files → `--save-files [dir]` (`dir` defaults to `output` in the repo root; writes `<subject>.txt` (`.html` for HTML-only emails) into `<dir>/YYYY-MM-DD/` for today, including emails already in SQLite).
 
 ## Run
 

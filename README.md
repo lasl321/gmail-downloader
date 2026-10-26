@@ -101,7 +101,7 @@ The resulting token is cached in `token.json` (in the directory you ran the comm
 | `--all-mail` | Search all mail instead of only the inbox. |
 | `-l, --label <name>` | Only search messages with this Gmail label (replaces the inbox scope). |
 | `--limit-date <YYYY-MM-DD>` | Only search emails on or after this date. |
-| `--save-files [dir]` | Also save each email as `<subject>.txt` in `<dir>/YYYY-MM-DD/` (today's date). `dir` defaults to `output`. Includes emails already in SQLite. |
+| `--save-files [dir]` | Also save each email as `<subject>.txt` (`.html` if it has only an HTML body) in `<dir>/YYYY-MM-DD/` (today's date). `dir` defaults to `output`. Includes emails already in SQLite. |
 
 By default the search covers the inbox only.
 
