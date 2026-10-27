@@ -1,4 +1,5 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname } from 'node:path';
 import { google, type Auth } from 'googleapis';
 import type { gmail_v1 } from 'googleapis';
 import { authenticate } from '@google-cloud/local-auth';
@@ -64,6 +65,7 @@ async function getAuth(credentialsPath: string, tokenPath: string): Promise<Auth
   process.stderr.write('Opening browser to authorize Gmail access...\n');
   const { credentials } = await authenticate({ keyfilePath: credentialsPath, scopes: SCOPES });
   copyCredentials(credentials, client);
+  await mkdir(dirname(tokenPath), { recursive: true });
   await writeFile(tokenPath, JSON.stringify(credentials), { mode: 0o600 });
   return client;
 }

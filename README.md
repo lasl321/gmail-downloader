@@ -86,9 +86,9 @@ The first time you run the tool, it opens your browser to a Google consent page.
 3. Approve **"View your email messages and settings"** (this is the read-only scope).
 4. The browser says authentication succeeded; return to the terminal.
 
-The resulting token is cached in `token.json` (in the directory you ran the command from), so later runs don't open the browser. Delete `token.json` to re-authorize or switch accounts.
+The resulting token is cached in `~/.config/gmail-downloader/token.json`, so later runs don't open the browser. Delete the token file to re-authorize or switch accounts.
 
-> **Token expiry:** while your OAuth consent screen is in "Testing" status, Google expires the token after about 7 days. If you get an authorization error, delete `token.json` and run again to re-authorize.
+> **Token expiry:** while your OAuth consent screen is in "Testing" status, Google expires the token after about 7 days. If you get an authorization error, delete the token file and run again to re-authorize.
 
 ## Options
 
@@ -97,7 +97,7 @@ The resulting token is cached in `token.json` (in the directory you ran the comm
 | `-s, --sender <address-or-domain>` | Optional, repeatable. Email address or domain to search for (`from:` in Gmail). With several `--sender` flags, emails from any of them match. If omitted, all inbox emails are downloaded. |
 | `-c, --credentials <path>` | Google OAuth client JSON. Default: `~/.config/gmail-downloader/access.json`. |
 | `-d, --db <path>` | SQLite file to write. Default: `~/.config/gmail-downloader/emails.sqlite`. |
-| `-t, --token <path>` | Where to cache the OAuth token. Default: `token.json`. |
+| `-t, --token <path>` | Where to cache the OAuth token. Default: `~/.config/gmail-downloader/token.json`. |
 | `--save-files [dir]` | Also save each email as `<subject>.txt` (`.html` if it has only an HTML body) in `<dir>/YYYY-MM-DD/` (today's date). `dir` defaults to `output`. Includes emails already in SQLite. |
 
 ## Output
@@ -113,4 +113,4 @@ The files `token.json` and `output/` are gitignored because they contain your pe
 - **`no credentials file`**: put the OAuth JSON at `~/.config/gmail-downloader/access.json` or pass `--credentials <path>`.
 - **`Error 403: access_denied` in the browser**: the Google account isn't listed as a test user. Add it under the OAuth consent screen's test users (step 5).
 - **`Gmail API has not been used in project ... or it is disabled`**: enable the Gmail API for the project (step 3), wait a minute, and retry.
-- **Authorization suddenly fails after a few days**: delete `token.json` and re-run (see token expiry above).
+- **Authorization suddenly fails after a few days**: delete the token file and re-run (see token expiry above).

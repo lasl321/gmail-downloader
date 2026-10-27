@@ -10,13 +10,15 @@ import { renderTable, type Row } from './helpers/renderTable.js';
 
 const DEFAULT_CREDENTIALS_PATH = join(homedir(), '.config', 'gmail-downloader', 'access.json');
 
+const DEFAULT_TOKEN_PATH = join(homedir(), '.config', 'gmail-downloader', 'token.json');
+
 const DEFAULT_DB_PATH = join(homedir(), '.config', 'gmail-downloader', 'emails.sqlite');
 
 interface Options {
   sender: string[];
   credentials?: string;
   db?: string;
-  token: string;
+  token?: string;
   saveFiles?: string;
 }
 
@@ -36,7 +38,7 @@ program
     `path to the Google OAuth client JSON file (default: ${DEFAULT_CREDENTIALS_PATH})`,
   )
   .option('-d, --db <path>', `SQLite file to write (default: ${DEFAULT_DB_PATH})`)
-  .option('-t, --token <path>', 'where to cache the OAuth token', 'token.json')
+  .option('-t, --token <path>', `where to cache the OAuth token (default: ${DEFAULT_TOKEN_PATH})`)
   .addOption(
     new Option(
       '--save-files [dir]',
@@ -61,7 +63,7 @@ program
     const query = `in:inbox ${senderFilter}`.trim();
     const { emails, skippedIds } = await fetchEmails({
       credentialsPath: credentials,
-      tokenPath: opts.token,
+      tokenPath: opts.token ?? DEFAULT_TOKEN_PATH,
       query,
       skipIds: getSavedIds(dbPath),
     });
