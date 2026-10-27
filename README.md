@@ -102,11 +102,11 @@ The resulting token is cached in `~/.config/gmail-downloader/token.json`, so lat
 
 ## Output
 
-- **stdout**: a table (`Received`, `From`, `Subject`) of every email considered in this run, including ones already in SQLite, sorted by receive date (oldest first). On a terminal, long subjects are truncated to fit the width. No output means nothing matched. Redirect it to keep it: `npm --silent start -- --sender example.com > emails.txt`.
+- **stdout**: a `console.table` (`Received` in local time, `From`, `Subject`, plus Node's leading `(index)` column) of every email considered in this run, including ones already in SQLite, sorted by receive date (oldest first). No output means nothing matched. Redirect it to keep it: `npm --silent start -- --sender example.com > emails.txt`.
 - **`~/.config/gmail-downloader/emails.sqlite`** (or the `--db` path): every email downloaded so far. Re-running skips messages already stored, so it is safe to run repeatedly.
-- **`output/YYYY-MM-DD/*.txt`** (with `--save-files`): one text file per email, with `From`, `To`, and `Subject` headers followed by the plain-text body.
+- **`output/YYYY-MM-DD/*.txt`** (with `--save-files`): one text file per email, with `From`, `To`, `Subject`, and `Received` headers followed by the plain-text body. Emails with only an HTML body are saved as `.html` (with a leading `Received` comment). If two emails share a subject, the later file gets the Gmail message ID appended to its name.
 
-The files `token.json` and `output/` are gitignored because they contain your personal email.
+`*.sqlite`, `token.json`, and `output/` are gitignored because they contain your personal email or credentials (the default locations under `~/.config/gmail-downloader/` are outside the repo anyway).
 
 ## Troubleshooting
 
