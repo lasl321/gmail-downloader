@@ -6,7 +6,6 @@ import { join } from 'node:path';
 import { fetchEmails } from './gmail.js';
 import { getEmailsByIds, getSavedIds, saveEmails } from './db.js';
 import { saveEmailFiles } from './files.js';
-import { renderTable, type Row } from './helpers/renderTable.js';
 
 const DEFAULT_CREDENTIALS_PATH = join(homedir(), '.config', 'gmail-downloader', 'access.json');
 
@@ -76,12 +75,13 @@ program
     }
     all.sort((a, b) => a.receivedAt.localeCompare(b.receivedAt));
     if (all.length) {
-      const rows = all.map((e): Row => [
-        new Date(e.receivedAt).toLocaleString('sv-SE').slice(0, 16), // YYYY-MM-DD HH:MM in local time
-        e.from.email,
-        e.subject,
-      ]);
-      process.stdout.write(renderTable(rows));
+      console.table(
+        all.map((e) => ({
+          Received: new Date(e.receivedAt).toLocaleString('sv-SE').slice(0, 16), // YYYY-MM-DD HH:MM in local time
+          From: e.from.email,
+          Subject: e.subject,
+        })),
+      );
     }
   });
 
