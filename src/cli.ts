@@ -69,9 +69,8 @@ program
     saveEmails(dbPath, emails);
     const all = [...emails, ...getEmailsByIds(dbPath, skippedIds)];
     if (opts.saveFiles) {
-      const dir = join(opts.saveFiles, new Date().toLocaleDateString('sv-SE')); // YYYY-MM-DD in local time
-      saveEmailFiles(dir, all);
-      process.stderr.write(`Saved ${all.length} file(s) to ${dir}/\n`);
+      saveEmailFiles(opts.saveFiles, all);
+      process.stderr.write(`Saved ${all.length} file(s) to ${opts.saveFiles}/\n`);
     }
     all.sort((a, b) => a.receivedAt.localeCompare(b.receivedAt));
     if (all.length) {

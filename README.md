@@ -73,7 +73,7 @@ npm start -- --sender linkedin.com --sender ziprecruiter.com
 # A single address, using a credentials file in another location
 npm start -- --sender jobs@example.com --credentials ~/secrets/client_secret_abc.json
 
-# Also write each email to output/<today>/
+# Also write each email to output/
 npm start -- --sender linkedin.com --save-files
 ```
 
@@ -98,13 +98,13 @@ The resulting token is cached in `~/.config/gmail-downloader/token.json`, so lat
 | `-c, --credentials <path>` | Google OAuth client JSON. Default: `~/.config/gmail-downloader/access.json`. |
 | `-d, --db <path>` | SQLite file to write. Default: `~/.config/gmail-downloader/emails.sqlite`. |
 | `-t, --token <path>` | Where to cache the OAuth token. Default: `~/.config/gmail-downloader/token.json`. |
-| `--save-files [dir]` | Also save each email as `<subject>.txt` (`.html` if it has only an HTML body) in `<dir>/YYYY-MM-DD/` (today's date). `dir` defaults to `output`. Includes emails already in SQLite. |
+| `--save-files [dir]` | Also save each email as `<subject>.txt` (`.html` if it has only an HTML body) directly in `<dir>`. `dir` defaults to `output`. Includes emails already in SQLite. |
 
 ## Output
 
 - **stdout**: a `console.table` (`Received` in local time, `From`, `Subject`, plus Node's leading `(index)` column) of every email considered in this run, including ones already in SQLite, sorted by receive date (oldest first). No output means nothing matched. Redirect it to keep it: `npm --silent start -- --sender example.com > emails.txt`.
 - **`~/.config/gmail-downloader/emails.sqlite`** (or the `--db` path): every email downloaded so far. Re-running skips messages already stored, so it is safe to run repeatedly.
-- **`output/YYYY-MM-DD/*.txt`** (with `--save-files`): one text file per email, with `From`, `To`, `Subject`, and `Received` headers followed by the plain-text body. Emails with only an HTML body are saved as `.html` (with a leading `Received` comment). If two emails share a subject, the later file gets the Gmail message ID appended to its name.
+- **`output/*.txt`** (with `--save-files`): one text file per email, with `From`, `To`, `Subject`, and `Received` headers followed by the plain-text body. Emails with only an HTML body are saved as `.html` (with a leading `Received` comment). If two emails share a subject, the later file gets the Gmail message ID appended to its name.
 
 `*.sqlite`, `token.json`, and `output/` are gitignored because they contain your personal email or credentials (the default locations under `~/.config/gmail-downloader/` are outside the repo anyway).
 
