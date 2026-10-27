@@ -16,9 +16,6 @@ interface Options {
   credentials?: string;
   db?: string;
   token: string;
-  allMail?: boolean;
-  label?: string;
-  limitDate?: string;
   saveFiles?: string;
 }
 
@@ -46,7 +43,7 @@ program
   .description('Download emails (from one or more senders, or all inbox emails if none) into SQLite and print them as a table')
   .option(
     '-s, --sender <address-or-domain>',
-    'email address or domain to look for (e.g. ziprecruiter.com); repeat for multiple senders; omit to download everything in scope',
+    'email address or domain to look for (e.g. ziprecruiter.com); repeat for multiple senders; omit to download everything in the inbox',
     (value: string, previous: string[]) => [...previous, value],
     [] as string[],
   )
@@ -56,9 +53,6 @@ program
   )
   .option('-d, --db <path>', `SQLite file to write (default: ${DEFAULT_DB_PATH})`)
   .option('-t, --token <path>', 'where to cache the OAuth token', 'token.json')
-  .option('--all-mail', 'search all mail instead of only the inbox')
-  .option('-l, --label <name>', 'only search messages with this Gmail label (replaces the inbox scope)')
-  .option('--limit-date <YYYY-MM-DD>', 'only search emails on or after this date')
   .addOption(
     new Option(
       '--save-files [dir]',
@@ -78,24 +72,9 @@ program
       throw new Error(`credentials file not found: ${credentials}`);
     }
     const dbPath = opts.db ?? DEFAULT_DB_PATH;
-    const scope = opts.label
-      ? `label:"${opts.label.replaceAll('"', '')}" `
-      : opts.allMail
-        ? ''
-        : 'in:inbox ';
-    let dateFilter = '';
-    if (opts.limitDate) {
-      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(opts.limitDate);
-      const valid =
-        m && new Date(`${opts.limitDate}T00:00:00Z`).toISOString().startsWith(opts.limitDate);
-      if (!m || !valid) {
-        throw new Error(`--limit-date must be a valid date in YYYY-MM-DD format, got "${opts.limitDate}"`);
-      }
-      dateFilter = ` after:${m[1]}/${m[2]}/${m[3]}`;
-    }
     const froms = opts.sender.map((s) => `from:${s}`);
     const senderFilter = froms.length > 1 ? `{${froms.join(' ')}}` : (froms[0] ?? '');
-    const query = `${scope}${senderFilter}${dateFilter}`.trim();
+    const query = `in:inbox ${senderFilter}`.trim();
     const { emails, skippedIds } = await fetchEmails({
       credentialsPath: credentials,
       tokenPath: opts.token,

@@ -73,11 +73,8 @@ npm start -- --sender linkedin.com --sender ziprecruiter.com
 # A single address, using a credentials file in another location
 npm start -- --sender jobs@example.com --credentials ~/secrets/client_secret_abc.json
 
-# Only emails on/after a date, searching all mail instead of just the inbox
-npm start -- --sender example.com --all-mail --limit-date 2026-01-01
-
-# Only messages with a Gmail label, also writing each email to output/<today>/
-npm start -- --sender linkedin.com --label "Professional/Jobs" --save-files
+# Also write each email to output/<today>/
+npm start -- --sender linkedin.com --save-files
 ```
 
 ### First run: authorizing access
@@ -97,16 +94,11 @@ The resulting token is cached in `token.json` (in the directory you ran the comm
 
 | Option | Description |
 | --- | --- |
-| `-s, --sender <address-or-domain>` | Optional, repeatable. Email address or domain to search for (`from:` in Gmail). With several `--sender` flags, emails from any of them match. If omitted, all emails in scope (the inbox by default) are downloaded. |
+| `-s, --sender <address-or-domain>` | Optional, repeatable. Email address or domain to search for (`from:` in Gmail). With several `--sender` flags, emails from any of them match. If omitted, all inbox emails are downloaded. |
 | `-c, --credentials <path>` | Google OAuth client JSON. Default: `~/.config/gmail-downloader/access.json`. |
 | `-d, --db <path>` | SQLite file to write. Default: `~/.config/gmail-downloader/emails.sqlite`. |
 | `-t, --token <path>` | Where to cache the OAuth token. Default: `token.json`. |
-| `--all-mail` | Search all mail instead of only the inbox. |
-| `-l, --label <name>` | Only search messages with this Gmail label (replaces the inbox scope). |
-| `--limit-date <YYYY-MM-DD>` | Only search emails on or after this date. |
 | `--save-files [dir]` | Also save each email as `<subject>.txt` (`.html` if it has only an HTML body) in `<dir>/YYYY-MM-DD/` (today's date). `dir` defaults to `output`. Includes emails already in SQLite. |
-
-By default the search covers the inbox only.
 
 ## Output
 
@@ -122,4 +114,3 @@ The files `token.json` and `output/` are gitignored because they contain your pe
 - **`Error 403: access_denied` in the browser**: the Google account isn't listed as a test user. Add it under the OAuth consent screen's test users (step 5).
 - **`Gmail API has not been used in project ... or it is disabled`**: enable the Gmail API for the project (step 3), wait a minute, and retry.
 - **Authorization suddenly fails after a few days**: delete `token.json` and re-run (see token expiry above).
-- **`--limit-date must be a valid date`**: use the `YYYY-MM-DD` format, e.g. `2026-03-31`.
